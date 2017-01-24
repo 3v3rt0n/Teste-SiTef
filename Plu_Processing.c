@@ -1,0 +1,267 @@
+__attribute__ ((unused))        static char *SVNid = "DTPLSVN$Id: Plu_Processing.c 20586 2010-10-20 12:54:45Z bine $";
+
+/*----------------------------------------------------------------------
+ *  Copyright by Wincor Nixdorf International GmbH, 33094 Paderborn
+ *  Germany, 2005 - 2010
+ *  All rights reserved.
+----------------------------------------------------------------------*/
+
+/*
+ *  Holds sUser_Plu_Processing
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include "calypso/db_def.h"
+#include "calypso/db_empl.h"
+#include "calypso/db_plu.h"
+#include "calypso/db_move.h"
+#include "calypso/db_msgue.h"
+#include "calypso/db_dept.h"
+#include "calypso/db_cmmedia.h"
+#include "calypso/db_medlst.h"
+#include "calypso/db_ejrecs.h"
+#include "calypso/db_acc.h"
+#include "calypso/db_bwlist.h"
+#include "calypso/db_barcode.h"
+#include "calypso/db_command.h"
+#include "calypso/db_cust.h"
+#include "calypso/db_datent.h"
+#include "calypso/db_emprof.h"
+#include "calypso/db_halo.h"
+#include "calypso/db_itmz.h"
+#include "calypso/db_keyb.h"
+#include "calypso/db_medgrp.h"
+#include "calypso/db_msr.h"
+#include "calypso/db_pluext.h"
+#include "calypso/db_poslit.h"
+#include "calypso/db_postxt.h"
+#include "calypso/db_restr.h"
+#include "calypso/db_scf.h"
+#include "calypso/db_tax.h"
+#include "calypso/db_tcf.h"
+#include "calypso/db_termtot.h"
+
+#include "calypso/events.h"
+#include "calypso/posdef.h"
+#include "calypso/pospi.h"
+#include "calypso/structs.h"
+#include "calypso/poslits.h"
+#include "calypso/environ.h"
+#include "calypso/osys.h"
+#include "calypso/devices.h"
+#include "calypso/errserv.h"
+#include "calypso/protos.h"
+#include "calypso/config.h"
+//#include "calypso/sysapi.h"
+#include "calypso/discount.h"
+#include "calypso/ueprotos.h"
+#include "calypso/fiscal.h"
+
+#include "syscom/nm_error.h" /* Containing errorcodes for SYSCOM */
+#include "syscom/nm_ta.h"    /* Containing return and errorcodes for lSend_EJ */
+#include "syscom/calprint.h"
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Description	: cCheckForFiscalItems() -
+
+NOTE 		:
+
+
+Comments    :
+
+Arguments   : None
+
+Returns     : None.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+char cCheckForFiscalItems()
+{
+	char cRes = 0;
+
+	printf("\nszCouponFmly %s", gstItemStruct.stItemRecord.szCouponFmly);
+	//check for ICMS category, considering we'll get it from szCouponFmly
+	if(	strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T0"	)==0 	||
+		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T1"	)==0 	||
+		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T2"	)==0 	||
+		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T3"	)==0 	||
+		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T4"	)==0 	||
+		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"TN"	)==0 	||
+		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"F"	)==0 	||
+		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"I"	)==0	)
+		cRes=1;
+	else
+		cRes=0;
+
+	printf("\ncRes %d, ulP_long3 %ld ulP_long3 %ld", cRes, gstItemStruct.unSpecific.stPlu.ulP_long3, gstItemStruct.unSpecific.stPlu.ulP_long4);
+	//if we have ICMS then check for PIS and COFINS taxes, getting them respectively from ulP_long3 and ulP_long4
+	if(cRes==1 && gstItemStruct.unSpecific.stPlu.ulP_long3 > 0 && gstItemStruct.unSpecific.stPlu.ulP_long4 > 0)
+		cRes = 1;
+
+	return cRes;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Description	: cCheckForFiscalItems() -
+
+NOTE 		:
+
+
+Comments    :
+
+Arguments   : None
+
+Returns     : None.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+char cCheckForSATItems()
+{
+	char cRes = 1;
+	gastEJ[0].stItem.stItem
+/*
+	printf("\nszCouponFmly %s", gstItemStruct.stItemRecord.szCouponFmly);
+	//check for ICMS category, considering we'll get it from szCouponFmly
+	switch (gstItemStruct.stItemRecord.szCouponFmly)
+	{
+		case "T0":
+		case "T1":
+		case "T2":
+		case "T3":
+		case "T4":
+		case "TN":
+		case "F":
+		case "I":
+		case "N":
+			cRes = 1;
+			break;
+		default:
+			break;
+	}
+
+	printf("\ncRes %c, ulP_long3 %l ulP_long3 %l", cRes, gstItemStruct.unSpecific.stPlu.ulP_long3, gstItemStruct.unSpecific.stPlu.ulP_long4);
+	//if we have ICMS then check for PIS and COFINS taxes, getting them respectively from ulP_long3 and ulP_long4
+	if(cRes==1 && gstItemStruct.unSpecific.stPlu.ulP_long3 > 0 && gstItemStruct.unSpecific.stPlu.ulP_long4 > 0)
+		cRes = 1;*/
+
+	return cRes;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Description  : sUser_Plu_Processing() - This function is where a user
+                   would link into the system with their own functions if
+                   the user wanted to gain control in the processing of
+                   a Plu.
+
+                   NOTE : If the Enter key is defined as a Plu key, e.g. item
+                   entries are done using the enter key, you have to enable
+                   user exits on the enter key in keyprof.cfg, too.
+                   User Exits are supplied at the following positions in the
+                   processing of a Plu:
+
+                   1. Immediately after a key is depressed but prior to
+                      any processing or error checking.
+
+                   2. After data records are read in but before testing
+                      fields or flags in these records.
+
+                   3. After data records are read and checked for errors
+                      but before the price option.
+
+                   4. Before Displaying the Item.
+
+                   5. Before Updating Totals for the Item.
+
+                   6. Before Printing the Item.
+
+                   7. At the start of setting up post processing.
+
+                   8. After all processing is done but prior to going
+                      back to the event handler.     
+
+    Comments     : This is called from the event handler.
+                 : EVENT 24, EVENT_ROW 61 -> EXT_PLU.
+
+    Arguments    : None
+
+    Returns      : USER_EXIT_RETURN The User must exit to the event handler with
+                   a return(USER_EXIT_RETURN) after calling the function
+                   Restore_Stack_For_User_Exit.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+short sUser_Plu_Processing(void)
+{
+	int teste;
+	//char szPAUTORANDO[20];
+
+	calprint("V1",CLP_POS_USEX, "userexit", "sUser_Plu_Processing US=<%d>",
+			gstUserSave.uchUserPosition);
+
+	switch(gstUserSave.uchUserPosition){
+	case 1:
+		break;
+	case 2:
+		printf("**** CASE 2 ulPrice1 %d", gstItemStruct.stItemRecord.ulPrice1);
+		if(gstItemStruct.stItemRecord.ulPrice1 == 0)//check for item price == 0
+		{
+			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
+			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
+			//strncpy(gstDispStr.szErrorString, "COD ITEM: XXXX PRECO INVALIDO",sizeof(gstDispStr.szErrorString)-1);
+			//strcpy(gstDispStr.szErrorString, "COD ITEM: XXXX");
+			strcpy(gstDispStr.szErrorStringRt,"PRECO INVALIDO");
+			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
+
+			gstUserSave.uchUserReturnCode = 1;
+			gstUserSave.unUserFlags.stFlags.fbUserError = TRUE;
+
+			//Disable scanner before displaying error message
+			/*vDisable_Flag(SCANNER);
+			vDisable_Flag(AUX_SCANNER);
+
+			//Display error message and wait for Operator to hit Clear Key
+			sDo_Error(EDIT_CLEAR_ONLY,STANDARD_BEEP);
+
+			//Once error is cleared, re-enable scanner
+			vEnable_Flag(SCANNER);
+			vEnable_Flag(AUX_SCANNER);*/
+
+		}
+		//check for Fiscal items
+		else if(!cCheckForFiscalItems())
+		{
+			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
+			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
+			strcpy(gstDispStr.szErrorStringRt,"TRIB INVALIDA");
+			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
+
+			gstUserSave.uchUserReturnCode = 1;
+			gstUserSave.unUserFlags.stFlags.fbUserError = TRUE;
+		}
+		//check for all info on Item that is needed to send a request for SAT-NFCe
+		else if(!cCheckForSATItems())
+		{
+			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
+			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
+			strcpy(gstDispStr.szErrorStringRt,"MSGRIA INVALIDA");
+			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
+		}
+		//if we have no issue, proceed with taxes calculation and info storing
+		else
+		{
+
+		}
+
+		break;
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+	case 8:
+	default:
+		break;
+	}
+
+
+	vRestore_Stack_For_User_Return();
+	return (USER_EXIT_RETURN);
+}

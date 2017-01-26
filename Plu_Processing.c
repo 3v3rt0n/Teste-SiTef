@@ -83,7 +83,7 @@ char cCheckForFiscalItems()
 
 	printf("\nszCouponFmly %s", gstItemStruct.stItemRecord.szCouponFmly);
 	//check for ICMS category, considering we'll get it from szCouponFmly
-	if(	strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T0"	)==0 	||
+	if (strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T0"	)==0 	||
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T1"	)==0 	||
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T2"	)==0 	||
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T3"	)==0 	||
@@ -91,14 +91,20 @@ char cCheckForFiscalItems()
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"TN"	)==0 	||
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"F"	)==0 	||
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"I"	)==0	)
+	{
 		cRes=1;
+	}
 	else
+	{
 		cRes=0;
+	}
 
 	printf("\ncRes %d, ulP_long3 %ld ulP_long3 %ld", cRes, gstItemStruct.unSpecific.stPlu.ulP_long3, gstItemStruct.unSpecific.stPlu.ulP_long4);
 	//if we have ICMS then check for PIS and COFINS taxes, getting them respectively from ulP_long3 and ulP_long4
-	if(cRes==1 && gstItemStruct.unSpecific.stPlu.ulP_long3 > 0 && gstItemStruct.unSpecific.stPlu.ulP_long4 > 0)
+	if (cRes==1 && gstItemStruct.unSpecific.stPlu.ulP_long3 > 0 && gstItemStruct.unSpecific.stPlu.ulP_long4 > 0)
+	{
 		cRes = 1;
+	}
 
 	return cRes;
 }
@@ -117,33 +123,62 @@ Returns     : None.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 char cCheckForSATItems()
 {
-	char cRes = 1;
-	gastEJ[0].stItem.stItem
-/*
-	printf("\nszCouponFmly %s", gstItemStruct.stItemRecord.szCouponFmly);
-	//check for ICMS category, considering we'll get it from szCouponFmly
-	switch (gstItemStruct.stItemRecord.szCouponFmly)
+	char cRes = 0;
+
+	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	/*||
+		gstItemStruct.stItemRecord.uchQtyUnit*/)
 	{
-		case "T0":
-		case "T1":
-		case "T2":
-		case "T3":
-		case "T4":
-		case "TN":
-		case "F":
-		case "I":
-		case "N":
-			cRes = 1;
-			break;
-		default:
-			break;
+		cRes = 0;
 	}
+	else
+	{
+		cRes = 1;
+	}
+	printf("\nszDesc %s\n", gstItemStruct.stItemRecord.szDesc);
+	printf("\nszNmbr %s\n", gstItemStruct.stItemRecord.szNmbr);
+	printf("\nuchQtyUnit %c\n", gstItemStruct.stItemRecord.uchQtyUnit);
+	printf("\nMrpPrice1 %ld\n", gstItemStruct.stItemRecord.ulMrpPrice1);
+	printf("\nulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
+	printf("\nulPriceP %ld\n", gstItemStruct.stItemRecord.ulPriceP);
+	printf("\nulQty1 %ld\n", gstItemStruct.stItemRecord.ulQty1);
+	printf("\nEntryNmbr %s\n", gstItemStruct.szEntryNmbr);
+	printf("\nulExtendAmt %ld\n", gstItemStruct.ulExtendAmt);
+	printf("\nQtySold %ld\n", gstItemStruct.ulQtySold);
 
-	printf("\ncRes %c, ulP_long3 %l ulP_long3 %l", cRes, gstItemStruct.unSpecific.stPlu.ulP_long3, gstItemStruct.unSpecific.stPlu.ulP_long4);
-	//if we have ICMS then check for PIS and COFINS taxes, getting them respectively from ulP_long3 and ulP_long4
-	if(cRes==1 && gstItemStruct.unSpecific.stPlu.ulP_long3 > 0 && gstItemStruct.unSpecific.stPlu.ulP_long4 > 0)
-		cRes = 1;*/
-
+/*
+	strcpy(codigo, "codigo001"); // pegar da aplicacao																const char *codigo,
+	strcpy(descricao, gastEJ[sLoop].stItem.stItem.stPlu.szDesc); // pegar da aplicacao								const char *descricao,
+	strcpy(cEAN, ""); // pegar da aplicacao																			const char *cEAN,
+	strcpy(unidadeMedida, "KG"); // pegar da aplicacao																const char *unidadeMedida,
+	sprintf(quantidade, "%ld", gastEJ[sLoop].stItem.stItem.stPlu.ulQty1/100); // pegar da aplicacao					const char *quantidade,
+	sprintf(valorUnitario, "%ld", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt)/100); // pegar da aplicacao  const char *valorUnitario,
+	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1);
+	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100 [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100);
+	printf("\n(gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100) - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt [%ld]", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt)/100);
+	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulQty1 = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulQty1);
+	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1);
+	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPriceP = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPriceP);
+	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulMrpPrice1 = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulMrpPrice1);
+	printf("\ngastEJ[sLoop].stItem.stPromoTotal.lPromoAmnt = [%ld]", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt)/100);
+	strcpy(cEANTrib, ""); // pegar da aplicacao																		const char *cEANTrib,
+	strcpy(unidadeMedidaTributavel, "KG"); // igual a de cima														const char *unidadeMedidaTributavel,
+	sprintf(quantidadeTributavel, "%ld", gastEJ[sLoop].stItem.stItem.stPlu.ulQty1); // igual a de cima				const char *quantidadeTributavel,
+	sprintf(valorUnitarioTributavel, "%ld", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100) - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt); // igual a de cima const char *valorUnitarioTributavel,
+	strcpy(tipoDescontoAcrescimo, "$"); // passar o caractere "$"													const char *tipoDescontoAcrescimo,
+	strcpy(valorAcrescimo, ""); // vazio																			const char *valorAcrescimo,
+	strcpy(valorDesconto, ""); // pegar da aplicacao																const char *valorDesconto,
+	strcpy(arredondaTrunca, "A"); // passar o caractere "A"															const char *arredondaTrunca,
+	strcpy(ncm, "19041000"); // pegar da aplicacao																	const char *ncm,
+	strcpy(cfop, "5102"); // pegar da aplicacao																		const char *cfop,
+	strcpy(informacaoAdicional, "informacaoAdicional001"); // pegar da aplicacao									const char *informacaoAdicional,
+	strcpy(cstIcms, "40"); // pegar da aplicacao																	const char *cstIcms,
+	strcpy(origemProduto, "0"); // pegar da aplicacao																const char *origemProduto,
+	strcpy(csosn, ""); // vazio																						const char *csosn,
+	strcpy(percentualReducBCICMS, ""); // vazio																		const char *percentualReducBCICMS,
+	strcpy(aliquotaICMS, ""); // pegar da aplicacao																	const char *aliquotaICMS,
+	strcpy(aliquotaCreditoICMSSN, ""); // pegar da aplicacao														const char *aliquotaCreditoICMSSN,
+	strcpy(CEST, "1702401"); // pegar da aplicacao																	const char *CEST,
+*/
 	return cRes;
 }
 
@@ -201,7 +236,7 @@ short sUser_Plu_Processing(void)
 		break;
 	case 2:
 		printf("**** CASE 2 ulPrice1 %d", gstItemStruct.stItemRecord.ulPrice1);
-		if(gstItemStruct.stItemRecord.ulPrice1 == 0)//check for item price == 0
+		if (gstItemStruct.stItemRecord.ulPrice1 == 0)//check for item price == 0
 		{
 			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
 			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
@@ -226,7 +261,7 @@ short sUser_Plu_Processing(void)
 
 		}
 		//check for Fiscal items
-		else if(!cCheckForFiscalItems())
+		else if (!cCheckForFiscalItems())
 		{
 			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
 			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
@@ -237,7 +272,7 @@ short sUser_Plu_Processing(void)
 			gstUserSave.unUserFlags.stFlags.fbUserError = TRUE;
 		}
 		//check for all info on Item that is needed to send a request for SAT-NFCe
-		else if(!cCheckForSATItems())
+		else if (!cCheckForSATItems())
 		{
 			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
 			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);

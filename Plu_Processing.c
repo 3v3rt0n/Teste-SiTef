@@ -126,7 +126,7 @@ char cCheckForSATItems()
 	char cRes = 0;
 
 	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	||
-		gstItemStruct.stItemRecord.uchQtyUnit > 0			||
+		gstItemStruct.stItemRecord.uchQtyUnit > 0			//||
 		)
 	{
 		cRes = 0;
@@ -255,17 +255,121 @@ short sUser_Plu_Processing(void)
 		//if we have no issue, proceed with taxes calculation and info storing
 		else
 		{
+			short sICMSrate=0;
 			// lets use MrpPrices in order to store tax rates and values gstItemStruct.stItemRecord.ulMrpPrice1
 
+			//ICMS calculations / maybe this will have to be done after item is processed
+
+			//translate somehow "figura fiscal" to ICMS rate
+			if (strcmp(gstItemStruct.stItemRecord.szCouponFmly,"")!=0)
+			{
+				sICMSrate=1800;
+			}
+
+			//later will have to add discounts to calculation
+//(price*qty)*tax
+			//ICMS amount 18%
+			gstItemStruct.stItemRecord.ulMrpPrice1 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*sICMSrate/100;
+
+			//PIS amount 15%
+			gstItemStruct.stItemRecord.ulMrpPrice2 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.unSpecific.stPlu.ulP_long3/100;
+
+			//COFINS amount 3,5%
+			gstItemStruct.stItemRecord.ulMrpPrice3 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.unSpecific.stPlu.ulP_long4/100;
+
+			printf("\nICMS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice1);
+			printf("\nPIS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice2);
+			printf("\nCOFINS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice3);
+
+			printf("\nItem Struct\n");
+			printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
+			printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
+			printf("ulQtySold %ld\n", gstItemStruct.ulQtySold);
+			printf("ulExtendAmt %ld\n", gstItemStruct.ulExtendAmt);
+			printf("ulQtyMkdn %ld\n", gstItemStruct.ulQtyMkdn);
+			printf("lAmtMkdn %ld\n", gstItemStruct.lAmtMkdn);
+
+			printf("\nProc Item\n");
+			printf("lCurrentPrice %d\n", gstProcItem.lCurrentPrice);
+			printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
+			printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
+			printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
+			printf("ulForQty %d\n", gstProcItem.ulForQty);
 		}
 
 		break;
 	case 3:
+		break;
 	case 4:
+		break;
 	case 5:
+		printf("\nCASE 5");
+		printf("\nItem Struct\n");
+		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
+		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
+		printf("ulQtySold %ld\n", gstItemStruct.ulQtySold);
+		printf("ulExtendAmt %ld\n", gstItemStruct.ulExtendAmt);
+		printf("ulQtyMkdn %ld\n", gstItemStruct.ulQtyMkdn);
+		printf("lAmtMkdn %ld\n", gstItemStruct.lAmtMkdn);
+
+		printf("\nProc Item\n");
+		printf("lCurrentPrice %d\n", gstProcItem.lCurrentPrice);
+		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
+		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
+		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		break;
 	case 6:
+		printf("\nCASE 6");
+		printf("\nItem Struct\n");
+		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
+		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
+		printf("ulQtySold %ld\n", gstItemStruct.ulQtySold);
+		printf("ulExtendAmt %ld\n", gstItemStruct.ulExtendAmt);
+		printf("ulQtyMkdn %ld\n", gstItemStruct.ulQtyMkdn);
+		printf("lAmtMkdn %ld\n", gstItemStruct.lAmtMkdn);
+
+		printf("\nProc Item\n");
+		printf("lCurrentPrice %d\n", gstProcItem.lCurrentPrice);
+		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
+		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
+		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		break;
 	case 7:
+		printf("\nCASE 7");
+		printf("\nItem Struct\n");
+		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
+		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
+		printf("ulQtySold %ld\n", gstItemStruct.ulQtySold);
+		printf("ulExtendAmt %ld\n", gstItemStruct.ulExtendAmt);
+		printf("ulQtyMkdn %ld\n", gstItemStruct.ulQtyMkdn);
+		printf("lAmtMkdn %ld\n", gstItemStruct.lAmtMkdn);
+
+		printf("\nProc Item\n");
+		printf("lCurrentPrice %d\n", gstProcItem.lCurrentPrice);
+		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
+		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
+		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		break;
 	case 8:
+		printf("\nCASE 8");
+		printf("\nItem Struct\n");
+		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
+		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
+		printf("ulQtySold %ld\n", gstItemStruct.ulQtySold);
+		printf("ulExtendAmt %ld\n", gstItemStruct.ulExtendAmt);
+		printf("ulQtyMkdn %ld\n", gstItemStruct.ulQtyMkdn);
+		printf("lAmtMkdn %ld\n", gstItemStruct.lAmtMkdn);
+
+		printf("\nProc Item\n");
+		printf("lCurrentPrice %d\n", gstProcItem.lCurrentPrice);
+		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
+		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
+		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		break;
 	default:
 		break;
 	}

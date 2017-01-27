@@ -125,8 +125,9 @@ char cCheckForSATItems()
 {
 	char cRes = 0;
 
-	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	/*||
-		gstItemStruct.stItemRecord.uchQtyUnit*/)
+	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	||
+		gstItemStruct.stItemRecord.uchQtyUnit > 0			||
+		)
 	{
 		cRes = 0;
 	}
@@ -134,38 +135,10 @@ char cCheckForSATItems()
 	{
 		cRes = 1;
 	}
-	printf("\nszDesc %s\n", gstItemStruct.stItemRecord.szDesc);
-	printf("\nszNmbr %s\n", gstItemStruct.stItemRecord.szNmbr);
-	printf("\nuchQtyUnit %c\n", gstItemStruct.stItemRecord.uchQtyUnit);
-	printf("\nMrpPrice1 %ld\n", gstItemStruct.stItemRecord.ulMrpPrice1);
-	printf("\nulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
-	printf("\nulPriceP %ld\n", gstItemStruct.stItemRecord.ulPriceP);
-	printf("\nulQty1 %ld\n", gstItemStruct.stItemRecord.ulQty1);
-	printf("\nEntryNmbr %s\n", gstItemStruct.szEntryNmbr);
-	printf("\nulExtendAmt %ld\n", gstItemStruct.ulExtendAmt);
-	printf("\nQtySold %ld\n", gstItemStruct.ulQtySold);
-
-/*
-	strcpy(codigo, "codigo001"); // pegar da aplicacao																const char *codigo,
-	strcpy(descricao, gastEJ[sLoop].stItem.stItem.stPlu.szDesc); // pegar da aplicacao								const char *descricao,
-	strcpy(cEAN, ""); // pegar da aplicacao																			const char *cEAN,
+//fie
+/*	strcpy(cEAN, ""); // pegar da aplicacao																			const char *cEAN,
 	strcpy(unidadeMedida, "KG"); // pegar da aplicacao																const char *unidadeMedida,
-	sprintf(quantidade, "%ld", gastEJ[sLoop].stItem.stItem.stPlu.ulQty1/100); // pegar da aplicacao					const char *quantidade,
-	sprintf(valorUnitario, "%ld", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt)/100); // pegar da aplicacao  const char *valorUnitario,
-	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1);
-	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100 [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100);
-	printf("\n(gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100) - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt [%ld]", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt)/100);
-	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulQty1 = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulQty1);
-	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1);
-	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulPriceP = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulPriceP);
-	printf("\ngastEJ[sLoop].stItem.stItem.stPlu.ulMrpPrice1 = [%ld]", gastEJ[sLoop].stItem.stItem.stPlu.ulMrpPrice1);
-	printf("\ngastEJ[sLoop].stItem.stPromoTotal.lPromoAmnt = [%ld]", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1 - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt)/100);
 	strcpy(cEANTrib, ""); // pegar da aplicacao																		const char *cEANTrib,
-	strcpy(unidadeMedidaTributavel, "KG"); // igual a de cima														const char *unidadeMedidaTributavel,
-	sprintf(quantidadeTributavel, "%ld", gastEJ[sLoop].stItem.stItem.stPlu.ulQty1); // igual a de cima				const char *quantidadeTributavel,
-	sprintf(valorUnitarioTributavel, "%ld", (gastEJ[sLoop].stItem.stItem.stPlu.ulPrice1/100) - gastEJ[sLoop].stItem.stPromoTotal[1].lPromoAmnt); // igual a de cima const char *valorUnitarioTributavel,
-	strcpy(tipoDescontoAcrescimo, "$"); // passar o caractere "$"													const char *tipoDescontoAcrescimo,
-	strcpy(valorAcrescimo, ""); // vazio																			const char *valorAcrescimo,
 	strcpy(valorDesconto, ""); // pegar da aplicacao																const char *valorDesconto,
 	strcpy(arredondaTrunca, "A"); // passar o caractere "A"															const char *arredondaTrunca,
 	strcpy(ncm, "19041000"); // pegar da aplicacao																	const char *ncm,
@@ -282,6 +255,7 @@ short sUser_Plu_Processing(void)
 		//if we have no issue, proceed with taxes calculation and info storing
 		else
 		{
+			// lets use MrpPrices in order to store tax rates and values gstItemStruct.stItemRecord.ulMrpPrice1
 
 		}
 

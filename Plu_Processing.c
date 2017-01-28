@@ -124,15 +124,21 @@ Returns     : None.
 char cCheckForSATItems()
 {
 	char cRes = 0;
+	printf("\ncCheckForSATItems \n");
+	printf("\nRecType %d\n", gstItemStruct.uchRecType);
+	printf("\nDesc %s\n",gstItemStruct.stItemRecord.szDesc);
+	printf("\Qty %d\n",gstItemStruct.stItemRecord.uchQtyUnit);
 
 	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	||
-		gstItemStruct.stItemRecord.uchQtyUnit > 0			//||
+		gstItemStruct.stItemRecord.uchQtyUnit == 0			//||
 		)
 	{
+		printf("SAT cRes %d", cRes);
 		cRes = 0;
 	}
 	else
 	{
+		printf("SAT cRes %d", cRes);
 		cRes = 1;
 	}
 //fie
@@ -152,6 +158,7 @@ char cCheckForSATItems()
 	strcpy(aliquotaCreditoICMSSN, ""); // pegar da aplicacao														const char *aliquotaCreditoICMSSN,
 	strcpy(CEST, "1702401"); // pegar da aplicacao																	const char *CEST,
 */
+	printf("SAT returning %d", cRes);
 	return cRes;
 }
 
@@ -247,6 +254,7 @@ short sUser_Plu_Processing(void)
 		//check for all info on Item that is needed to send a request for SAT-NFCe
 		else if (!cCheckForSATItems())
 		{
+			printf("SAT falso, vai mandar msg erro");
 			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
 			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
 			strcpy(gstDispStr.szErrorStringRt,"MSGRIA INVALIDA");
@@ -277,7 +285,7 @@ short sUser_Plu_Processing(void)
 			//COFINS amount 3,5%
 			gstItemStruct.stItemRecord.ulMrpPrice3 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.unSpecific.stPlu.ulP_long4/100;
 
-			printf("\nICMS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice1);
+			/*printf("\nICMS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice1);
 			printf("\nPIS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice2);
 			printf("\nCOFINS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice3);
 
@@ -294,7 +302,7 @@ short sUser_Plu_Processing(void)
 			printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
 			printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
 			printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
-			printf("ulForQty %d\n", gstProcItem.ulForQty);
+			printf("ulForQty %d\n", gstProcItem.ulForQty);*/
 		}
 
 		break;
@@ -303,7 +311,7 @@ short sUser_Plu_Processing(void)
 	case 4:
 		break;
 	case 5:
-		printf("\nCASE 5");
+		/*printf("\nCASE 5");
 		printf("\nItem Struct\n");
 		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
 		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
@@ -317,10 +325,10 @@ short sUser_Plu_Processing(void)
 		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
 		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
 		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
-		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);*/
 		break;
 	case 6:
-		printf("\nCASE 6");
+		/*printf("\nCASE 6");
 		printf("\nItem Struct\n");
 		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
 		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
@@ -334,10 +342,10 @@ short sUser_Plu_Processing(void)
 		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
 		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
 		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
-		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);*/
 		break;
 	case 7:
-		printf("\nCASE 7");
+		/*printf("\nCASE 7");
 		printf("\nItem Struct\n");
 		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
 		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
@@ -351,10 +359,10 @@ short sUser_Plu_Processing(void)
 		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
 		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
 		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
-		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);*/
 		break;
 	case 8:
-		printf("\nCASE 8");
+		/*printf("\nCASE 8");
 		printf("\nItem Struct\n");
 		printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
 		printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
@@ -368,7 +376,7 @@ short sUser_Plu_Processing(void)
 		printf("lQtyMkdn %d\n", gstProcItem.lQtyMkdn);
 		printf("lRegularPrice %d\n", gstProcItem.lRegularPrice);
 		printf("ulCurrentQty %d\n", gstProcItem.ulCurrentQty);
-		printf("ulForQty %d\n", gstProcItem.ulForQty);
+		printf("ulForQty %d\n", gstProcItem.ulForQty);*/
 		break;
 	default:
 		break;

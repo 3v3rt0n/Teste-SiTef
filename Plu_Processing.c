@@ -127,10 +127,10 @@ char cCheckForSATItems()
 	printf("\ncCheckForSATItems \n");
 	printf("\nRecType %d\n", gstItemStruct.uchRecType);
 	printf("\nDesc %s\n",gstItemStruct.stItemRecord.szDesc);
-	printf("\Qty %d\n",gstItemStruct.stItemRecord.uchQtyUnit);
+	printf("\Qty %d\n",gstProcItem.ulCurrentQty);
 
 	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	||
-		gstItemStruct.stItemRecord.uchQtyUnit == 0			//||
+			gstProcItem.ulCurrentQty == 0			//||
 		)
 	{
 		printf("SAT cRes %d", cRes);
@@ -218,30 +218,53 @@ short sUser_Plu_Processing(void)
 		printf("**** CASE 2 ulPrice1 %d", gstItemStruct.stItemRecord.ulPrice1);
 		if (gstItemStruct.stItemRecord.ulPrice1 == 0)//check for item price == 0
 		{
-			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
+			/*memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
 			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
-			//strncpy(gstDispStr.szErrorString, "COD ITEM: XXXX PRECO INVALIDO",sizeof(gstDispStr.szErrorString)-1);
-			//strcpy(gstDispStr.szErrorString, "COD ITEM: XXXX");
 			strcpy(gstDispStr.szErrorStringRt,"PRECO INVALIDO");
 			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
+*/
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, "","");
+
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "COD ITEM:","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, gstItemStruct.stItemRecord.szNmbr,"");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "PRECO INVALIDO","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, HIT_CLEAR,"");
+
+			strcpy(gstDispStr.szErrorString,"PRECO INVALIDO");
+			strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
+			/*strcpy(gstDispStr.szErrorString,"szErrorString");
+			strcpy(gstDispStr.szErrorString2,"szErrorString2");
+			strcpy(gstDispStr.szErrorString2Rt,"szErrorString2Rt");
+			strcpy(gstDispStr.szErrorStringRt,"szErrorStringRt");
+			strcpy(gstDispStr.szErrorStringRt,"szErrorStringRt");
+			strcpy(gstDispStr.szCurrentOper[0][0],"szCurrentOper[0][0]");
+			strcpy(gstDispStr.szCurrentOper[0][1],"szCurrentOper[0][1]");
+			strcpy(gstDispStr.szCurrentOper[1][0],"szCurrentOper[1][0]");
+			strcpy(gstDispStr.szCurrentOper[1][1],"szCurrentOper[1][1]");
+			strcpy(gstDispStr.szCurrentOper[2][0],"szCurrentOper[2][0]");
+			strcpy(gstDispStr.szCurrentOper[2][1],"szCurrentOper[2][1]");
+			strcpy(gstDispStr.szCurrentOper[3][0],"szCurrentOper[3][0]");
+			strcpy(gstDispStr.szCurrentOper[3][1],"szCurrentOper[3][1]");
+			strcpy(gstDispStr.szLeftAuxPrompt,"szLeftAuxPrompt");
+			strcpy(gstDispStr.szLeftPrompt,"szLeftPrompt");
+			strcpy(gstDispStr.szRightAuxPrompt,"szRightAuxPrompt");
+			strcpy(gstDispStr.szRightPrompt,"szRightPrompt");*/
+
+			while( EXT_CLEAR != sWait_Ent_Clear())
+			{
+				strcpy(gstDispStr.szErrorString,"PRECO INVALIDO");
+				strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
+			}
 
 			gstUserSave.uchUserReturnCode = 1;
-			gstUserSave.unUserFlags.stFlags.fbUserError = TRUE;
-
-			//Disable scanner before displaying error message
-			/*vDisable_Flag(SCANNER);
-			vDisable_Flag(AUX_SCANNER);
-
-			//Display error message and wait for Operator to hit Clear Key
-			sDo_Error(EDIT_CLEAR_ONLY,STANDARD_BEEP);
-
-			//Once error is cleared, re-enable scanner
-			vEnable_Flag(SCANNER);
-			vEnable_Flag(AUX_SCANNER);*/
+			//gstUserSave.unUserFlags.stFlags.fbUserError = TRUE;
 
 		}
 		//check for Fiscal items
-		else if (!cCheckForFiscalItems())
+		/*else if (!cCheckForFiscalItems())
 		{
 			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
 			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
@@ -259,7 +282,7 @@ short sUser_Plu_Processing(void)
 			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
 			strcpy(gstDispStr.szErrorStringRt,"MSGRIA INVALIDA");
 			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
-		}
+		}*/
 		//if we have no issue, proceed with taxes calculation and info storing
 		else
 		{

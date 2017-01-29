@@ -60,10 +60,48 @@ __attribute__ ((unused))        static char *SVNid = "DTPLSVN$Id: Plu_Processing
 #include "calypso/discount.h"
 #include "calypso/ueprotos.h"
 #include "calypso/fiscal.h"
+#include "calypso/cust_account.h"
 
 #include "syscom/nm_error.h" /* Containing errorcodes for SYSCOM */
 #include "syscom/nm_ta.h"    /* Containing return and errorcodes for lSend_EJ */
 #include "syscom/calprint.h"
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Description	: sGetICMSTaxRate() -
+
+NOTE 		:
+
+
+Comments    :
+
+Arguments   : None
+
+Returns     : None.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+short sGetICMSTaxRate(char * szFiguraFiscal, short * psICMSTaxRate)
+{
+	printf("%s",gstCustomerAccount.szAccountNmbr);
+	if (SUCCESS == sGet_Customer_Account_Info(gstItemStruct.stItemRecord.szCouponFmly))
+	{
+		//now search for the ICMS tax rate
+		if (atoi(gstCustomerAccount.szTaxId) > 0 && atoi(gstCustomerAccount.szTaxId) < 10000)
+		{
+			*psICMSTaxRate = atoi(gstCustomerAccount.szTaxId);
+		}
+		else
+		{
+			return (ERROR);
+		}
+
+	}
+	else
+	{
+		return (ERROR);
+	}
+
+	return (SUCCESS);
+}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Description	: cCheckForFiscalItems() -
@@ -79,8 +117,9 @@ Returns     : None.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 char cCheckForFiscalItems()
 {
-	char cRes = 0;
+	char cRes = 1;
 
+	//need to find all validations rules for ICMS, by now we'll check if it exists and is >0 and <100
 	printf("\nszCouponFmly %s", gstItemStruct.stItemRecord.szCouponFmly);
 	//check for ICMS category, considering we'll get it from szCouponFmly
 	if (strcmp(gstItemStruct.stItemRecord.szCouponFmly,"T0"	)==0 	||
@@ -92,18 +131,26 @@ char cCheckForFiscalItems()
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"F"	)==0 	||
 		strcmp(gstItemStruct.stItemRecord.szCouponFmly,"I"	)==0	)
 	{
-		cRes=1;
+		//if valid "figura fiscal" try to find corresponding CustomerAccount, where we can find the tax rates for ICMS or ISS
+		if (ERROR == sGetICMSTaxRate(gstItemStruct.stItemRecord.szCouponFmly, (short*)&gstItemStruct.stItemRecord.flItmz2))
+		{
+			return cRes = 0;
+		}
 	}
 	else
 	{
 		cRes=0;
 	}
 
-	printf("\ncRes %d, ulP_long3 %ld ulP_long3 %ld", cRes, gstItemStruct.unSpecific.stPlu.ulP_long3, gstItemStruct.unSpecific.stPlu.ulP_long4);
-	//if we have ICMS then check for PIS and COFINS taxes, getting them respectively from ulP_long3 and ulP_long4
-	if (cRes==1 && gstItemStruct.unSpecific.stPlu.ulP_long3 > 0 && gstItemStruct.unSpecific.stPlu.ulP_long4 > 0)
+	//get PIS tax rate
+	if (gstItemStruct.unSpecific.stPlu.usP_short1 > 9999)
 	{
-		cRes = 1;
+		cRes = 0;
+	}
+	//get COFINS tax rate
+	if (gstItemStruct.unSpecific.stPlu.usP_short2 > 9999)
+	{
+		cRes = 0;
 	}
 
 	return cRes;
@@ -124,10 +171,10 @@ Returns     : None.
 char cCheckForSATItems()
 {
 	char cRes = 0;
-	printf("\ncCheckForSATItems \n");
+	/*printf("\ncCheckForSATItems \n");
 	printf("\nRecType %d\n", gstItemStruct.uchRecType);
 	printf("\nDesc %s\n",gstItemStruct.stItemRecord.szDesc);
-	printf("\Qty %d\n",gstProcItem.ulCurrentQty);
+	printf("\Qty %d\n",gstProcItem.ulCurrentQty);*/
 
 	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	||
 			gstProcItem.ulCurrentQty == 0			//||
@@ -205,9 +252,6 @@ char cCheckForSATItems()
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 short sUser_Plu_Processing(void)
 {
-	int teste;
-	//char szPAUTORANDO[20];
-
 	calprint("V1",CLP_POS_USEX, "userexit", "sUser_Plu_Processing US=<%d>",
 			gstUserSave.uchUserPosition);
 
@@ -218,43 +262,26 @@ short sUser_Plu_Processing(void)
 		printf("**** CASE 2 ulPrice1 %d", gstItemStruct.stItemRecord.ulPrice1);
 		if (gstItemStruct.stItemRecord.ulPrice1 == 0)//check for item price == 0
 		{
-			/*memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
-			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
-			strcpy(gstDispStr.szErrorStringRt,"PRECO INVALIDO");
-			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
-*/
+			//clear keyboard display before showing new message
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, "","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, "","");
 
+			//display message on keyboard display
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "COD ITEM:","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, gstItemStruct.stItemRecord.szNmbr,"");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "PRECO INVALIDO","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, HIT_CLEAR,"");
 
+			//copy message to be displayed on customer display too
 			strcpy(gstDispStr.szErrorString,"PRECO INVALIDO");
 			strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
-			/*strcpy(gstDispStr.szErrorString,"szErrorString");
-			strcpy(gstDispStr.szErrorString2,"szErrorString2");
-			strcpy(gstDispStr.szErrorString2Rt,"szErrorString2Rt");
-			strcpy(gstDispStr.szErrorStringRt,"szErrorStringRt");
-			strcpy(gstDispStr.szErrorStringRt,"szErrorStringRt");
-			strcpy(gstDispStr.szCurrentOper[0][0],"szCurrentOper[0][0]");
-			strcpy(gstDispStr.szCurrentOper[0][1],"szCurrentOper[0][1]");
-			strcpy(gstDispStr.szCurrentOper[1][0],"szCurrentOper[1][0]");
-			strcpy(gstDispStr.szCurrentOper[1][1],"szCurrentOper[1][1]");
-			strcpy(gstDispStr.szCurrentOper[2][0],"szCurrentOper[2][0]");
-			strcpy(gstDispStr.szCurrentOper[2][1],"szCurrentOper[2][1]");
-			strcpy(gstDispStr.szCurrentOper[3][0],"szCurrentOper[3][0]");
-			strcpy(gstDispStr.szCurrentOper[3][1],"szCurrentOper[3][1]");
-			strcpy(gstDispStr.szLeftAuxPrompt,"szLeftAuxPrompt");
-			strcpy(gstDispStr.szLeftPrompt,"szLeftPrompt");
-			strcpy(gstDispStr.szRightAuxPrompt,"szRightAuxPrompt");
-			strcpy(gstDispStr.szRightPrompt,"szRightPrompt");*/
 
+			//wait until operator press clear
 			while( EXT_CLEAR != sWait_Ent_Clear())
 			{
+				//since below method resets some displays, we need to write it again
 				strcpy(gstDispStr.szErrorString,"PRECO INVALIDO");
 				strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
 			}
@@ -264,26 +291,62 @@ short sUser_Plu_Processing(void)
 
 		}
 		//check for Fiscal items
-		/*else if (!cCheckForFiscalItems())
+		else if (!cCheckForFiscalItems())
 		{
-			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
-			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
-			strcpy(gstDispStr.szErrorStringRt,"TRIB INVALIDA");
-			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
+			//clear keyboard display before showing new message
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, "","");
+
+			//display message on keyboard display
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "COD ITEM:","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, gstItemStruct.stItemRecord.szNmbr,"");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "PRECO INVALIDO","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, HIT_CLEAR,"");
+
+			//copy message to be displayed on customer display too
+			strcpy(gstDispStr.szErrorString,"TRIB INVALIDA");
+			strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
+
+			while( EXT_CLEAR != sWait_Ent_Clear())
+			{
+				//since below method resets some displays, we need to write it again
+				strcpy(gstDispStr.szErrorString,"TRIB INVALIDA");
+				strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
+			}
 
 			gstUserSave.uchUserReturnCode = 1;
-			gstUserSave.unUserFlags.stFlags.fbUserError = TRUE;
 		}
 		//check for all info on Item that is needed to send a request for SAT-NFCe
 		else if (!cCheckForSATItems())
 		{
-			printf("SAT falso, vai mandar msg erro");
-			memset(gstDispStr.szErrorString,0x00,sizeof(gstDispStr.szErrorString));
-			sprintf(gstDispStr.szErrorString,"COD ITEM: %s",gstItemStruct.stItemRecord.szNmbr);
-			strcpy(gstDispStr.szErrorStringRt,"MSGRIA INVALIDA");
-			strcpy(gstDispStr.szErrorString2, HIT_CLEAR);
-		}*/
-		//if we have no issue, proceed with taxes calculation and info storing
+			//clear keyboard display before showing new message
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, "","");
+
+			//display message on keyboard display
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "COD ITEM:","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, gstItemStruct.stItemRecord.szNmbr,"");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "PRECO INVALIDO","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, HIT_CLEAR,"");
+
+			//copy message to be displayed on customer display too
+			strcpy(gstDispStr.szErrorString,"MSGRIA INVALIDA");
+			strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
+
+			while( EXT_CLEAR != sWait_Ent_Clear())
+			{
+				//since below method resets some displays, we need to write it again
+				strcpy(gstDispStr.szErrorString,"MSGRIA INVALIDA");
+				strcpy(gstDispStr.szErrorString2,HIT_CLEAR);
+			}
+
+			gstUserSave.uchUserReturnCode = 1;
+		}
+		//if we have no issue, proceed with taxes calculation and store them
 		else
 		{
 			short sICMSrate=0;

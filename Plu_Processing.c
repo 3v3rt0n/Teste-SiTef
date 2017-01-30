@@ -44,11 +44,13 @@ __attribute__ ((unused))        static char *SVNid = "DTPLSVN$Id: Plu_Processing
 #include "calypso/db_tax.h"
 #include "calypso/db_tcf.h"
 #include "calypso/db_termtot.h"
+#include  "calypso/db_cust_account.h"
 
 #include "calypso/events.h"
 #include "calypso/posdef.h"
 #include "calypso/pospi.h"
 #include "calypso/structs.h"
+#include  "calypso/cust_account.h"
 #include "calypso/poslits.h"
 #include "calypso/environ.h"
 #include "calypso/osys.h"
@@ -60,7 +62,6 @@ __attribute__ ((unused))        static char *SVNid = "DTPLSVN$Id: Plu_Processing
 #include "calypso/discount.h"
 #include "calypso/ueprotos.h"
 #include "calypso/fiscal.h"
-#include "calypso/cust_account.h"
 
 #include "syscom/nm_error.h" /* Containing errorcodes for SYSCOM */
 #include "syscom/nm_ta.h"    /* Containing return and errorcodes for lSend_EJ */
@@ -147,13 +148,21 @@ char cCheckForFiscalItems()
 	{
 		cRes = 0;
 	}
+	else
+	{
+		gstItemStruct.stItemRecord.ulMrpPrice1 = gstItemStruct.unSpecific.stPlu.usP_short1;
+	}
 	//get COFINS tax rate
 	if (gstItemStruct.unSpecific.stPlu.usP_short2 > 9999)
 	{
 		cRes = 0;
 	}
+	else
+	{
+		gstItemStruct.stItemRecord.ulMrpPrice2 = gstItemStruct.unSpecific.stPlu.usP_short2;
+	}
 
-	return cRes;
+	return cRes=1;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -170,24 +179,30 @@ Returns     : None.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 char cCheckForSATItems()
 {
-	char cRes = 0;
+	char cRes = 1;
 	/*printf("\ncCheckForSATItems \n");
 	printf("\nRecType %d\n", gstItemStruct.uchRecType);
 	printf("\nDesc %s\n",gstItemStruct.stItemRecord.szDesc);
 	printf("\Qty %d\n",gstProcItem.ulCurrentQty);*/
 
-	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") == 0	||
-			gstProcItem.ulCurrentQty == 0			//||
-		)
+	if (strcmp(gstItemStruct.stItemRecord.szDesc,"") 	== 0	||
+			gstProcItem.ulCurrentQty 					== 0	||
+			gstItemStruct.unSpecific.stPlu.ulP_long3 	== 0	||
+			gstItemStruct.unSpecific.stPlu.ulP_long4 	== 0	||
+			/*gstItemStruct.unSpecific.stPlu.usP_short3	== 0 	||*/
+			gstItemStruct.unSpecific.stPlu.uchP_char1	>  0	||
+			gstItemStruct.unSpecific.stPlu.uchP_char2	>  0	)
 	{
 		printf("SAT cRes %d", cRes);
 		cRes = 0;
 	}
-	else
-	{
-		printf("SAT cRes %d", cRes);
-		cRes = 1;
-	}
+
+/*	long NCM = gstItemStruct.unSpecific.stPlu.ulP_long3;
+	long TotalTaxRates = gstItemStruct.unSpecific.stPlu.ulP_long4;
+	short AdditionalNCMCode = gstItemStruct.unSpecific.stPlu.usP_short3;
+	char CSTReturn = gstItemStruct.unSpecific.stPlu.uchP_char1;
+	char CSTSale = gstItemStruct.unSpecific.stPlu.uchP_char2;*/
+
 //fie
 /*	strcpy(cEAN, ""); // pegar da aplicacao																			const char *cEAN,
 	strcpy(unidadeMedida, "KG"); // pegar da aplicacao																const char *unidadeMedida,
@@ -206,7 +221,7 @@ char cCheckForSATItems()
 	strcpy(CEST, "1702401"); // pegar da aplicacao																	const char *CEST,
 */
 	printf("SAT returning %d", cRes);
-	return cRes;
+	return cRes=1;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -259,7 +274,7 @@ short sUser_Plu_Processing(void)
 	case 1:
 		break;
 	case 2:
-		printf("**** CASE 2 ulPrice1 %d", gstItemStruct.stItemRecord.ulPrice1);
+		printf("**** CASE 2 ulPrice1 %ld", gstItemStruct.stItemRecord.ulPrice1);
 		if (gstItemStruct.stItemRecord.ulPrice1 == 0)//check for item price == 0
 		{
 			//clear keyboard display before showing new message
@@ -302,7 +317,7 @@ short sUser_Plu_Processing(void)
 			//display message on keyboard display
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "COD ITEM:","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, gstItemStruct.stItemRecord.szNmbr,"");
-			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "PRECO INVALIDO","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "TRIB INVALIDA","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, HIT_CLEAR,"");
 
 			//copy message to be displayed on customer display too
@@ -330,7 +345,7 @@ short sUser_Plu_Processing(void)
 			//display message on keyboard display
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_ONE, "COD ITEM:","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_TWO, gstItemStruct.stItemRecord.szNmbr,"");
-			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "PRECO INVALIDO","");
+			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_THREE, "MSGRIA INVALIDA","");
 			vFour_Line_Oper_Disp(NO_SAVE, DISP_LINE_FOUR, HIT_CLEAR,"");
 
 			//copy message to be displayed on customer display too
@@ -349,32 +364,53 @@ short sUser_Plu_Processing(void)
 		//if we have no issue, proceed with taxes calculation and store them
 		else
 		{
-			short sICMSrate=0;
-			// lets use MrpPrices in order to store tax rates and values gstItemStruct.stItemRecord.ulMrpPrice1
+			//using tax rates on following struct fields
+			//ICMS rate on gstItemStruct.stItemRecord.flItmz2
+			//PIS rate on gstItemStruct.stItemRecord.ulMrpPrice1
+			//COFINS rate on gstItemStruct.stItemRecord.ulMrpPrice2
+
+			gstItemStruct.stItemRecord.flItmz2 = 1800;
+			gstItemStruct.stItemRecord.ulMrpPrice1 = 750;
+			gstItemStruct.stItemRecord.ulMrpPrice2 = 350;
 
 			//ICMS calculations / maybe this will have to be done after item is processed
 
-			//translate somehow "figura fiscal" to ICMS rate
-			if (strcmp(gstItemStruct.stItemRecord.szCouponFmly,"")!=0)
-			{
-				sICMSrate=1800;
-			}
-
 			//later will have to add discounts to calculation
 //(price*qty)*tax
-			//ICMS amount 18%
-			gstItemStruct.stItemRecord.ulMrpPrice1 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*sICMSrate/100;
+			//storing ICMS amount on ulMrpPrice3
+			//gstItemStruct.stItemRecord.ulMrpPrice3 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.stItemRecord.flItmz2/100;
+			long lModule=0;
 
-			//PIS amount 15%
-			gstItemStruct.stItemRecord.ulMrpPrice2 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.unSpecific.stPlu.ulP_long3/100;
+			//gstItemStruct.stItemRecord.ulMrpPrice4 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.stItemRecord.flItmz2/100;
+			gstItemStruct.stItemRecord.ulMrpPrice3 = lRounding(((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000),
+																 gstItemStruct.stItemRecord.flItmz2, MULTIPLY_OPRT, 1, ARITHMETIC_ROUND);
+			gstItemStruct.stItemRecord.ulMrpPrice3 = gstItemStruct.stItemRecord.ulMrpPrice3%100 < 50 ? gstItemStruct.stItemRecord.ulMrpPrice3/100 :
+													gstItemStruct.stItemRecord.ulMrpPrice3/100 + 1;
 
-			//COFINS amount 3,5%
-			gstItemStruct.stItemRecord.ulMrpPrice3 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.unSpecific.stPlu.ulP_long4/100;
 
-			/*printf("\nICMS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice1);
-			printf("\nPIS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice2);
-			printf("\nCOFINS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice3);
+			//storing PIS amount on ulMrpPrice4
+			//gstItemStruct.stItemRecord.ulMrpPrice4 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.stItemRecord.ulMrpPrice1/100;
+			gstItemStruct.stItemRecord.ulMrpPrice4 = lRounding(((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000),
+																 gstItemStruct.stItemRecord.ulMrpPrice1, MULTIPLY_OPRT, 1, ARITHMETIC_ROUND);
+			gstItemStruct.stItemRecord.ulMrpPrice4 = gstItemStruct.stItemRecord.ulMrpPrice4%100 < 50 ? gstItemStruct.stItemRecord.ulMrpPrice4/100 :
+																gstItemStruct.stItemRecord.ulMrpPrice4/100 + 1;
 
+			//storing COFINS amount on ulMrpPrice5
+			//gstItemStruct.stItemRecord.ulMrpPrice5 =((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000)*gstItemStruct.stItemRecord.ulMrpPrice2/100;
+			gstItemStruct.stItemRecord.ulMrpPrice5 = lRounding(((gstItemStruct.stItemRecord.ulPrice1 * gstProcItem.ulCurrentQty)/1000),
+																 gstItemStruct.stItemRecord.ulMrpPrice2, MULTIPLY_OPRT, 1, ARITHMETIC_ROUND);
+			gstItemStruct.stItemRecord.ulMrpPrice5 = gstItemStruct.stItemRecord.ulMrpPrice5%100 < 50 ? gstItemStruct.stItemRecord.ulMrpPrice4/100 :
+																gstItemStruct.stItemRecord.ulMrpPrice5/100 + 1;
+
+			printf("\nPreco %ld\n", gstItemStruct.stItemRecord.ulPrice1);
+			printf("\nTaxa ICMS %ld\n", gstItemStruct.stItemRecord.flItmz2);
+			printf("\nTaxa PIS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice1);
+			printf("\nTaxa COFINS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice2);
+
+			printf("\nvalor ICMS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice3);
+			printf("\nvalor PIS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice4);
+			printf("\nvalor COFINS %ld\n", gstItemStruct.stItemRecord.ulMrpPrice5);
+/*
 			printf("\nItem Struct\n");
 			printf("uchQtyUnit %d\n", gstItemStruct.stItemRecord.uchQtyUnit);
 			printf("ulPrice1 %ld\n", gstItemStruct.stItemRecord.ulPrice1);
